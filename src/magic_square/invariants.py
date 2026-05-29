@@ -1,2 +1,5 @@
+REQUIRED_VALUES = frozenset(range(1, 17))
+
+
 def satisfies_set_equality(grid):
-    return set(grid) == set(range(1, 17))
+    return set(grid) == REQUIRED_VALUES
