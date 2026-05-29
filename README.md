@@ -4,9 +4,9 @@
 
 본 프로젝트의 본질은 "마방진을 푸는 코드"가 아니라, **"마방진의 판정 규칙을 검증 가능한 절차로 옮기는 경험"** 이다. 자세한 동기·전개는 아래 문서를 참조.
 
-- [`Report/01_problem_definition.md`](./Report/01_problem_definition.md) — 5 Whys 기반 문제 정의 및 메타 invariant
-- [`Report/02_branching_strategy.md`](./Report/02_branching_strategy.md) — RGR 정합 브랜치·커밋 전략
-- [`Report/03_prd.md`](./Report/03_prd.md) — Product Requirements Document (persona·모드·CLI·MVP 경계)
+- [`Report/01_problem_definition.md`](./Report/01_problem_definition.md) — 5 Whys 기반 문제 정의 (**v2.0 2026-05-29 Solver 도메인 정렬**)
+- [`Report/02_branching_strategy.md`](./Report/02_branching_strategy.md) — RGR 정합 브랜치·커밋 전략 (도메인 중립, 유효)
+- [`Report/03_prd.md`](./Report/03_prd.md) — ⚠️ **SUPERSEDED** — 초기 Judge 도메인 기준 PRD. 워크북 §P-02에서 Solver 기준 새 PRD가 작성될 예정
 - [`Prompt/01_problem_definition_transcript.md`](./Prompt/01_problem_definition_transcript.md) — 문제 정의 과정의 원본 대화 기록
 
 ---

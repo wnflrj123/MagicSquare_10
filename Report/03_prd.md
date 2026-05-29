@@ -1,11 +1,21 @@
 # 4x4 Magic Square — Product Requirements Document (PRD)
 
+> ## ⚠️ SUPERSEDED — 본 문서는 더 이상 유효하지 않습니다
+>
+> **상태**: SUPERSEDED on **2026-05-29**
+> **사유**: 본 PRD는 본 프로젝트의 도메인을 "완성된 4×4 격자에 대한 마방진 **판정(Judge)**" 으로 설계하였다. 그러나 본 프로젝트의 출처(워크북)는 "빈칸 2개가 있는 4×4 격자의 누락 두 수를 찾는 **해결사(Solver)**"를 다룬다. 두 도메인은 입력·출력·알고리즘이 모두 다르므로, 본 PRD의 FR/AC/CLI 명세는 워크북 절차에 더 이상 사용되지 않는다.
+> **대체**: 새 PRD는 워크북 **§P-02 PRD 작성 (Gherkin 포함)** 단계에서 새로 작성될 예정이다 — 예상 파일명: `docs/PRD_MagicSquare.md` (워크북 권장 경로) 또는 `Report/0N_prd_solver.md`.
+> **보존 사유**: 본 PRD는 PRD를 어떻게 구조화하는지를 보여주는 **학습 기록**으로 가치가 있어 삭제하지 않고 보존한다. 다음 PRD 작성 시 참고 자료로 활용 가능하다.
+> **무엇이 살아 남는가**: 본 문서의 §10 성공 지표(SM-1~5), §11 제약(Python 3.10+, pytest), §3.1 G4(RED→GREEN 순서 보존) 같은 **TDD·형상관리·결정성** 관련 항목은 도메인 중립이므로 새 PRD에서도 유효하다. 모드 A/B, FR-J*/FR-C*, CLI 종료 코드 0/1/2 같은 항목은 도메인 종속이므로 폐기된다.
+
+---
+
 > 작성일: 2026-05-29
-> 상태: Draft v1.0
+> 상태: ~~Draft v1.0~~ → **SUPERSEDED v1.0** (상단 배너 참조)
 > 범위: 본 프로젝트의 MVP 및 그 이후 진화 방향 정의
 > 전제 문서:
-> - [`01_problem_definition.md`](./01_problem_definition.md) — 문제 정의 (5 Whys, invariant)
-> - [`02_branching_strategy.md`](./02_branching_strategy.md) — RGR 정합 브랜치 전략
+> - [`01_problem_definition.md`](./01_problem_definition.md) — 문제 정의 (5 Whys, invariant) ※ v2.0(2026-05-29)에서 Solver 도메인으로 개정됨. 본 PRD는 v1.0 기준으로 작성되었음
+> - [`02_branching_strategy.md`](./02_branching_strategy.md) — RGR 정합 브랜치 전략 (도메인 중립, 유효)
 > 본 문서가 결정하는 것: **"누구를 위해, 무엇을, 어떤 기준으로 만들 것인가"**
 > 본 문서가 결정하지 않는 것: 알고리즘 구현, 자료구조 선택, 코드 구조
 
