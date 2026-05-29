@@ -3,6 +3,9 @@ name = "magic-square"
 version = "0.1.0"
 description = "4x4 Magic Square — TDD learning project"
 requires-python = ">=3.10"
+dependencies = [
+  "PyQt6>=6.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

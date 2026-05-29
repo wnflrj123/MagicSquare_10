@@ -88,11 +88,18 @@
 python -m venv .venv
 source .venv/bin/activate
 
-# 2) 테스트 (코드가 있는 작업 브랜치에서)
-pytest
+# 2) 의존성
+pip install -e .            # PyQt6 포함
+pip install pytest          # dev
+
+# 3) 테스트
+pytest -v                   # 57 passed (Domain·Boundary·Control·Data·Integration·GUI smoke)
+
+# 4) GUI 실행
+python -m boundary.screen.app
 ```
 
-> Python ≥ 3.10 (pyproject.toml 참조)
+> Python ≥ 3.10 (pyproject.toml 참조). GUI는 PyQt6 6.0+ 필요.
 
 ---
 
