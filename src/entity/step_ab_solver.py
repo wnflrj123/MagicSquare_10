@@ -35,14 +35,10 @@ class StepABSolver:
         r1, c1 = blanks[0].row, blanks[0].col
         r2, c2 = blanks[1].row, blanks[1].col
 
-        # Step A: 작은 수 → 첫 빈칸, 큰 수 → 둘째 빈칸 (I8)
-        attempt_a = SolutionAttempter.apply(grid, blanks, (pair.n_small, pair.n_big))
-        if MagicSquareValidator.is_magic(attempt_a):
-            return [r1, c1, pair.n_small, r2, c2, pair.n_big]
-
-        # Step B (reverse): 큰 수 → 첫 빈칸, 작은 수 → 둘째 빈칸 (I9)
-        attempt_b = SolutionAttempter.apply(grid, blanks, (pair.n_big, pair.n_small))
-        if MagicSquareValidator.is_magic(attempt_b):
-            return [r1, c1, pair.n_big, r2, c2, pair.n_small]
+        # I8 → I9 우선순위: Step A((small,big))를 먼저, 실패 시 Step B((big,small))
+        for n_first, n_second in [(pair.n_small, pair.n_big), (pair.n_big, pair.n_small)]:
+            attempt = SolutionAttempter.apply(grid, blanks, (n_first, n_second))
+            if MagicSquareValidator.is_magic(attempt):
+                return [r1, c1, n_first, r2, c2, n_second]
 
         raise NoValidMagicSquareError("No valid magic square found.")
