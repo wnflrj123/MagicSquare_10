@@ -12,6 +12,7 @@
 - [`Report/06_ecb_skeleton_and_warmup.md`](./Report/06_ecb_skeleton_and_warmup.md) — ECB 스켈레톤 + User 엔티티 워밍업 (.cursorrules 동작 검증)
 - [`Report/07_skills_agents_user_journey_compressed.md`](./Report/07_skills_agents_user_journey_compressed.md) — Skills + Agent + User Journey 압축 (워크북 L1356·L1574·L1690 3단계 통합)
 - [`Report/08_prd.md`](./Report/08_prd.md) — **PRD v1.0 (ACTIVE)** Solver 도메인, Gherkin AC, FR-01~FR-09, 에러 코드 SSOT (`Report/03_prd.md` SUPERSEDED 대체)
+- [`Report/09_test_plan.md`](./Report/09_test_plan.md) — Test Plan + RED Skeleton 작성 방식 결정 (M1, 워크북 L3876·L4197 정합)
 - [`.cursorrules`](./.cursorrules) — Cursor AI 규약 (YAML 8섹션: project / code_style / architecture / tdd_rules / testing / forbidden / file_structure / ai_behavior)
 - [`Prompt/01_problem_definition_transcript.md`](./Prompt/01_problem_definition_transcript.md) — 문제 정의 과정의 원본 대화 기록
 - [`Prompt/02_architecture_design_transcript.md`](./Prompt/02_architecture_design_transcript.md) — 아키텍처 설계 과정의 원본 대화 기록
