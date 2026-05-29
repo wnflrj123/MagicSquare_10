@@ -13,6 +13,7 @@
 - [`Report/07_skills_agents_user_journey_compressed.md`](./Report/07_skills_agents_user_journey_compressed.md) — Skills + Agent + User Journey 압축 (워크북 L1356·L1574·L1690 3단계 통합)
 - [`Report/08_prd.md`](./Report/08_prd.md) — **PRD v1.0 (ACTIVE)** Solver 도메인, Gherkin AC, FR-01~FR-09, 에러 코드 SSOT (`Report/03_prd.md` SUPERSEDED 대체)
 - [`Report/09_test_plan.md`](./Report/09_test_plan.md) — Test Plan + RED Skeleton 작성 방식 결정 (M1, 워크북 L3876·L4197 정합)
+- [`Report/10_golden_master.md`](./Report/10_golden_master.md) — Golden Master 회귀 잠금 (M6 / I-GM-01, 워크북 L5048~5276 정합)
 - [`.cursorrules`](./.cursorrules) — Cursor AI 규약 (YAML 8섹션: project / code_style / architecture / tdd_rules / testing / forbidden / file_structure / ai_behavior)
 - [`Prompt/01_problem_definition_transcript.md`](./Prompt/01_problem_definition_transcript.md) — 문제 정의 과정의 원본 대화 기록
 - [`Prompt/02_architecture_design_transcript.md`](./Prompt/02_architecture_design_transcript.md) — 아키텍처 설계 과정의 원본 대화 기록
@@ -93,10 +94,13 @@ pip install -e .            # PyQt6 포함
 pip install pytest          # dev
 
 # 3) 테스트
-pytest -v                   # 57 passed (Domain·Boundary·Control·Data·Integration·GUI smoke)
+pytest -v                   # 59 passed (Domain·Boundary·Control·Data·Integration·GUI smoke·Golden Master)
+
+# 3-1) Golden Master baseline 재생성 (의도된 출력 변경 시에만)
+pytest tests/golden_master/ --approve-golden -v
 
 # 4) GUI 실행
-python -m boundary.screen.app
+PYTHONPATH=src python -m boundary.screen.app
 ```
 
 > Python ≥ 3.10 (pyproject.toml 참조). GUI는 PyQt6 6.0+ 필요.
