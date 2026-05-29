@@ -15,6 +15,7 @@ import sys
 from typing import Any, List, Optional
 
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFocusEvent
 from PyQt6.QtWidgets import (
     QApplication,
     QGridLayout,
@@ -26,6 +27,24 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+
+class SelectAllSpinBox(QSpinBox):
+    """QSpinBox 포커스 시 텍스트 전체 선택 → 키 입력이 기존 값을 덮어쓰도록.
+
+    QSpinBox 기본 동작은 포커스 시 텍스트 미선택이라, 값 2인 칸에 '0' 키 입력 시
+    '20' → MAX_VALUE clamp 동작으로 사용자 의도(0으로 변경)를 충족하지 못함.
+    본 클래스는 G-UI-07 통과를 위해 focusInEvent를 오버라이드한다.
+    """
+
+    def focusInEvent(self, event: QFocusEvent) -> None:
+        """포커스 진입 직후 selectAll로 전체 텍스트 선택 상태로 만든다.
+
+        Qt의 기본 focusInEvent는 selectAll을 수행하지 않아 키 입력이 append 됨.
+        본 오버라이드는 super().focusInEvent 완료 직후 동기적으로 selectAll 호출.
+        """
+        super().focusInEvent(event)
+        self.selectAll()
 
 from boundary.error_codes import ErrorObject, Result
 from boundary.solve_boundary import SolveBoundary
@@ -65,7 +84,7 @@ class MagicSquareMainWindow(QMainWindow):
         for row_index in range(GRID_SIZE):
             row_boxes: List[QSpinBox] = []
             for col_index in range(GRID_SIZE):
-                spin = QSpinBox()
+                spin = SelectAllSpinBox()
                 spin.setRange(BLANK_VALUE, MAX_VALUE)
                 spin.setValue(BLANK_VALUE)
                 spin.setMinimumWidth(60)
