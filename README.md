@@ -49,11 +49,13 @@
 
 ### 3-Layer 브랜치 구조
 
-| 계층 | 이름 예시                              | 직접 커밋          |
-| ---- | -------------------------------------- | ------------------ |
-| 통합 | `main`                                 | ❌                 |
-| 개발 | `develop`                              | ⚠️ 문서 작업만 예외 |
-| 작업 | `feature/<invariant-id>-<짧은-이름>`   | ✅                 |
+| 계층 | 이름 예시                              | 직접 커밋          | main으로의 머지 |
+| ---- | -------------------------------------- | ------------------ | --------------- |
+| 통합 | `main`                                 | ❌                 | —               |
+| 개발 | `develop`                              | ⚠️ 문서 작업만 예외 | **코드 release 시에만** (문서 단독 머지 금지) |
+| 작업 | `feature/<invariant-id>-<짧은-이름>`   | ✅                 | (develop으로 PR) |
+
+> `main`은 **코드 변경이 포함된 release 머지만** 받는다. 문서(`Report/`, `Prompt/`, `README.md`)만 변경된 `develop`은 `main`으로 PR하지 않는다. 자세한 정책은 [`Report/02_branching_strategy.md` §2.1](./Report/02_branching_strategy.md) 참조.
 
 작업 브랜치 예: `feature/I1-set-equality`, `feature/I2-row-sum`, `feature/I6-composite-judgment`, `feature/mode-A-puzzle`, `feature/M4-judgment-parity`
 
