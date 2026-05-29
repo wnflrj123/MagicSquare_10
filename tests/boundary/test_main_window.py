@@ -105,3 +105,24 @@ def test_boundary_injection_uses_provided_object_g_ui_06(qapp: QApplication) -> 
     window = MagicSquareMainWindow(boundary=fake_boundary)
 
     assert window.boundary is fake_boundary
+
+
+def test_spinbox_selects_all_on_focus_g_ui_07(qapp: QApplication) -> None:
+    """G-UI-07 — SpinBox 포커스 시 기존 텍스트가 모두 선택되어 키 입력이 덮어쓴다.
+
+    QSpinBox 기본 동작은 포커스 시 텍스트 미선택 → 키 입력이 append 됨.
+    이 동작은 '2 → 0 입력' 의도가 '20 → MAX_VALUE clamp'로 잘못 처리되는 원인.
+    본 테스트는 포커스 진입 후 lineEdit 텍스트가 모두 선택 상태임을 검증.
+    """
+    window = MagicSquareMainWindow()
+    spin = window.spinboxes[0][0]
+    spin.setValue(5)
+
+    # Act — focus 진입 시뮬레이션
+    spin.setFocus()
+    qapp.processEvents()  # 지연된 selectAll 타이머가 실행되도록
+
+    # Assert — lineEdit의 텍스트가 모두 선택되었거나 selectAll 동작이 보장됨
+    line_edit = spin.lineEdit()
+    assert line_edit.hasSelectedText() is True
+    assert line_edit.selectedText() == "5"
