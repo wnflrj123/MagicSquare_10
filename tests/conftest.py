@@ -1,5 +1,4 @@
-"""공통 픽스처 — 본 RED 단계에서는 인라인 사용 권장이지만,
-여러 파일에서 재사용되는 baseline 상수만 노출.
+"""공통 픽스처 + pytest 플러그인 옵션.
 
 PRD `Report/08_prd.md` §13 Traceability + Report/09 §5 정합.
 """
@@ -7,6 +6,21 @@ from __future__ import annotations
 from typing import List
 
 import pytest
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Golden Master baseline 재생성 플래그.
+
+    사용:
+        pytest                          # 비교 모드 (회귀 검출)
+        pytest --approve-golden         # baseline 재생성 (의도적 변경 수용)
+    """
+    parser.addoption(
+        "--approve-golden",
+        action="store_true",
+        default=False,
+        help="Regenerate Golden Master baseline file(s) instead of comparing.",
+    )
 
 
 GridT = List[List[int]]
