@@ -52,24 +52,76 @@
 - 해당 문서가 가리키는 **코드 변경이 release 가능한 형태로 develop에 모인 시점**에, 문서와 코드를 함께 한 release PR로 main에 올린다.
 - 학습 일지 보존(§4 rebase merge 원칙)은 이때도 유지된다.
 
-### 2.2 작업 브랜치 네이밍 규칙
+### 2.2 작업 브랜치 네이밍 규칙 (3종 — 워크북 정렬)
+
+워크북(L3826~3831)이 채택하는 보조 브랜치까지 포함해 다음 3종을 운영한다:
+
+| 종류 | 명명 | 용도 | 머지 방향 |
+| --- | --- | --- | --- |
+| feature | `feature/<id>-<kebab-name>` | 신규 invariant·기능 추가 (RED·GREEN 사이클) | → `develop` |
+| stabilize | `stabilize/<topic>` | 머지 직전 안정화·플레이크 제거·통합 보강 (예: `stabilize/green`) | → `develop` |
+| refactor | `refactor/<topic>` | 동작 변경 없는 구조 개선 (Refactor Cycle 전용, 예: `refactor/refactor`) | → `develop` |
+
+> 명명 정책에 대한 결정 (2026-05-29):
+> - **워크북은 단일 `feature/dual-track-tdd` 큰 브랜치**에서 Dual-Track TDD 전체 사이클을 돌린다.
+> - **본 프로젝트는 invariant 단위 분할**(`feature/I1-*`, `feature/I2-*` ...)을 채택했다 — RGR 학습 일지의 추적성을 우선시한 결정.
+> - 두 접근은 양립 가능하다: 워크북 절차를 따르되 브랜치 단위만 invariant로 좁힌다. 본 결정은 §02 §6 진행 순서에 반영되어 있다.
+
+### 2.3 PR 카덴스 (Pull Request 시점)
+
+워크북(L3865·L4197·L4512·L5285·L5867) 정렬. **언제 PR을 만드는가** 를 단계별로 못 박는다.
+
+#### A. feature → develop PR — 다음 3시점
+
+| # | 시점 | 사전 조건 | 산출물 |
+| --- | --- | --- | --- |
+| A1 | **RED 테스트 플랜 완성 후** (워크북 L4197) | `tests/` 디렉터리에 RED skeleton 작성 완료, `pytest` 실행 시 의도된 fail만 발생 (수집 에러·typo 0건) | feature 브랜치에서 develop으로 첫 PR. 리뷰어 1명 이상 지정 (워크북 L4205) |
+| A2 | **GREEN 완성 후** (워크북 L4512) | 직전 PR의 모든 RED가 GREEN으로 전환, 신규 회귀 0건, 커버리지 임계(§4계층별) 충족 | 동일 feature 브랜치 push → 동일 PR 갱신 또는 신규 PR. 머지 후 stabilize 또는 다음 feature로 분기 |
+| A3 | **REFACTOR 완성 후** (워크북 L5285) | `refactor/<topic>` 브랜치에서 동작 변경 없이 구조 개선 완료, 모든 테스트 동일·green, Golden Master matched | `refactor/*` → develop PR |
+
+#### B. develop → main PR — 단 1시점
+
+| # | 시점 | 사전 조건 | 산출물 |
+| --- | --- | --- | --- |
+| B1 | **마일스톤 도달 시** (워크북 L5867 — 최종 단계) | (i) 코드 변경 포함 (§2.1) (ii) 모든 RED→GREEN→Refactor 사이클 완료 (iii) 관련 문서(README·PRD·Report) 동기화 | release PR + 머지 + (선택) tag |
+
+#### C. PR을 만들지 않는 경우 (안티패턴)
+
+- ❌ **빈 PR / 진행 중 PR**: RED·GREEN·Refactor 어느 단계도 자체 완결되지 않은 상태에서 미리 만들지 않는다.
+- ❌ **문서 단독 develop → main PR**: §2.1 규칙. 문서는 코드 release와 함께 묶인다.
+- ❌ **여러 invariant·여러 단계를 섞은 PR**: 리뷰 단위가 커져 RGR 추적성이 무너진다. invariant 단위 분할 원칙(§6) 위반.
+
+#### D. PR 필수 포함 사항 (보강된 템플릿은 §5 참조)
+
+- 본 PR이 속한 RGR 단계 (A1/A2/A3 중 하나) 명시
+- 워크북 단계 번호 (L 번호 또는 P-XX) 인용
+- 직전 사이클과의 의존 관계 (예: "A1 PR #N의 RED를 통과")
+- 리뷰어 1명 이상 지정 (워크북 L4205)
+
+### 2.4 작업 브랜치 네이밍 규칙 (구체 예시 — Solver 도메인)
 
 ```
-feature/<invariant-id>-<kebab-case-name>
+feature/<layer>-<component-kebab-name>     # 단일 컴포넌트 단위 (본 프로젝트 권장)
+feature/dual-track-tdd                     # 워크북 단일 큰 브랜치 (선택지)
+stabilize/<topic>                          # 머지 직전 안정화
+refactor/<topic>                           # 동작 보존 구조 개선
 ```
 
-| 예시 | 매핑되는 도메인 invariant |
-| --- | --- |
-| `feature/I1-set-equality` | I1 — 격자 값의 집합 동등성 ({1..16} 일회 사용) |
-| `feature/I2-row-sum` | I2 — 가로행 합 = 34 |
-| `feature/I3-col-sum` | I3 — 세로열 합 = 34 |
-| `feature/I4-diag-sum` | I4 — 대각선 합 = 34 |
-| `feature/I6-composite-judgment` | I6 — 합성 판정 (I1~I4 동시 만족) |
-| `feature/mode-A-puzzle` | 모드 A — 사용자 입력형 퍼즐 |
-| `feature/mode-B-demo` | 모드 B — 정답 제시형 데모 |
-| `feature/M4-judgment-parity` | 메타 invariant M4 — 모드 간 판정 동일성 |
+| 예시 | 담당 컴포넌트 (04 §1·§2 매핑) | 보호 invariant / 테스트 ID |
+| --- | --- | --- |
+| `feature/dom-blank-finder` | Domain `BlankFinder` | I7 / D-LOC-* |
+| `feature/dom-missing-finder` | Domain `MissingNumberFinder` | I8 (정렬) / D-MISS-* |
+| `feature/dom-magic-validator` | Domain `MagicSquareValidator` | I5·I6 / D-VAL-* |
+| `feature/dom-attempter` | Domain `SolutionAttempter` | (순수 함수) / D-ATT-* |
+| `feature/dom-step-ab-solver` | Domain `StepABSolver` (오케스트레이션) | I8·I9·I10·I11 / D-SOL-* |
+| `feature/bnd-input-validator` | Boundary `InputValidator` | I1~I4·I12 / U-VAL-*·U-FLOW-* |
+| `feature/bnd-solve` | Boundary `SolveBoundary` | I10 / U-OUT-* |
+| `feature/dat-in-memory-repo` | Data `InMemoryRepository` | (영속성 계약) / DAT-MEM-* |
+| `feature/int-end-to-end` | Integration | I-INT-01~07 |
+| `stabilize/green` | (워크북 정렬) 전체 GREEN 안정화 | — |
+| `refactor/refactor` | (워크북 정렬) Refactor Cycle | — |
 
-> I5(파생 invariant — 34 강제)는 단독 브랜치를 만들지 않고 I1·I2 안에 흡수한다. 사용자가 정할 수 있는 자유도가 아니라 **파생값**이기 때문이다.
+> **이전 Judge 도메인 시절 브랜치 (`feature/I1-set-equality` 등)는 폐기 예정** — 현 작업 트리에 존재하는 RGR 2사이클은 학습 기록으로 보존하되 develop·main으로 머지하지 않는다. 새 작업은 위 Solver 네이밍을 사용한다.
 
 ---
 
@@ -110,7 +162,7 @@ refactor: <범위>
 | M1 — 테스트 선행 작성 | 🔴 RED 커밋이 항상 🟢 GREEN보다 먼저 존재 |
 | M2 — 과잉 설계 방지 | GREEN의 "최소 변경" 규칙 |
 | M3 — 자기-문서화 | 커밋 히스토리가 곧 명세서 |
-| M4 — 모드 간 판정 동일성 | `feature/M4-judgment-parity` 브랜치로 명시적 검증 |
+| M4 — Boundary↔Domain 호출 계약 동일성 | `feature/bnd-input-validator` + `feature/int-end-to-end` 브랜치가 U-FLOW-02·I-INT-03~06으로 명시 검증 |
 
 ---
 
@@ -127,25 +179,44 @@ refactor: <범위>
 
 ---
 
-## 5. Pull Request 템플릿
+## 5. Pull Request 템플릿 (Solver 도메인 + 워크북 정렬)
 
 ```markdown
-## Invariant / Mode
-- 대상: <예: I2 — 각 가로행의 합 = 34>
-- 모드: <공통 / 모드 A / 모드 B>
+## Component / Invariant
+- 담당 컴포넌트: <예: Domain MagicSquareValidator | Boundary InputValidator>
+- 보호 invariant: <예: I5·I6 | I1~I4·I12>
+- 04 §4.5 Traceability 행: <예: 6행, 12행>
+
+## PR 카덴스 단계 (02 §2.3 참조)
+- [x] A1 RED 테스트 플랜 완성 (워크북 L4197)
+- [ ] A2 GREEN 완성 (워크북 L4512)
+- [ ] A3 REFACTOR 완성 (워크북 L5285)
+- [ ] B1 release 머지 (워크북 L5867)
+
+## 워크북 단계 인용
+- L<번호> 또는 P-XX
 
 ## RGR 사이클 로그
 - 🔴 RED ×N / 🟢 GREEN ×N / 🔵 REFACTOR ×N
 
-## 새로 추가된 테스트
-- <test_name_1>
-- <test_name_2>
+## 새로 추가된 테스트 (ID + 이름)
+- <D-VAL-01: validator_returns_true_for_known_magic_square>
+- ...
+
+## 의존 PR
+- 직전: PR #<번호> (예: A1 RED PR을 통과한 후의 A2 GREEN)
+- 이 PR을 머지하면 잠금되는 회귀 규칙: L1~L6 중 어느 것 (04 §4.3)
+
+## 리뷰어
+- @<github-username> (워크북 L4205 — 1명 이상 의무)
 
 ## 검증 (verification-before-completion)
 - [ ] 모든 테스트가 GREEN
-- [ ] 리팩터 전후 테스트 동일 (추가·삭제·수정 없음)
+- [ ] 리팩터 전후 테스트 동일 (추가·삭제·수정 없음 — A3 PR만 해당)
 - [ ] 메타 invariant M1 충족 (RED 커밋이 GREEN보다 먼저 존재)
-- [ ] 도메인 invariant 위반 없음 (전체 테스트 스위트 통과)
+- [ ] 04 §4.5 Traceability Matrix의 해당 행에 새 테스트 ID 반영
+- [ ] 커버리지 임계 충족 (04 §4.4)
+- [ ] (B1만) 모든 Report·README·PRD 동기화
 ```
 
 ---
