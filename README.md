@@ -7,7 +7,9 @@
 - [`Report/01_problem_definition.md`](./Report/01_problem_definition.md) — 5 Whys 기반 문제 정의 (**v2.0 2026-05-29 Solver 도메인 정렬**)
 - [`Report/02_branching_strategy.md`](./Report/02_branching_strategy.md) — RGR 정합 브랜치·커밋 전략 (도메인 중립, 유효)
 - [`Report/03_prd.md`](./Report/03_prd.md) — ⚠️ **SUPERSEDED** — 초기 Judge 도메인 기준 PRD. 워크북 §P-02에서 Solver 기준 새 PRD가 작성될 예정
+- [`Report/04_architecture_design.md`](./Report/04_architecture_design.md) — Logic/Screen/Data/Integration 4계층 설계 + Traceability Matrix (워크북 §과제 1 산출)
 - [`Prompt/01_problem_definition_transcript.md`](./Prompt/01_problem_definition_transcript.md) — 문제 정의 과정의 원본 대화 기록
+- [`Prompt/02_architecture_design_transcript.md`](./Prompt/02_architecture_design_transcript.md) — 아키텍처 설계 과정의 원본 대화 기록
 
 ---
 
