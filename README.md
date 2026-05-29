@@ -6,6 +6,7 @@
 
 - [`Report/01_problem_definition.md`](./Report/01_problem_definition.md) — 5 Whys 기반 문제 정의 및 메타 invariant
 - [`Report/02_branching_strategy.md`](./Report/02_branching_strategy.md) — RGR 정합 브랜치·커밋 전략
+- [`Report/03_prd.md`](./Report/03_prd.md) — Product Requirements Document (persona·모드·CLI·MVP 경계)
 - [`Prompt/01_problem_definition_transcript.md`](./Prompt/01_problem_definition_transcript.md) — 문제 정의 과정의 원본 대화 기록
 
 ---
