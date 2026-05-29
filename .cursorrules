@@ -1,0 +1,263 @@
+# =============================================================================
+# project — 프로젝트 정체성·범위
+# =============================================================================
+project:
+  name: MagicSquare
+  description: |
+    4×4 부분 마방진(빈칸 2개) Solver — Dual-Track UI + Logic TDD 학습 프로젝트.
+    핵심 입력: 4×4 int 행렬 (0=빈칸, 빈칸 정확히 2개, 값 ∈ {0}∪{1..16}, 0 제외 중복 금지).
+    핵심 출력: int[6] = [r1, c1, n1, r2, c2, n2] (1-index, row-major 빈칸 순서).
+    알고리즘: Step A (작은 수→첫 빈칸) → 실패 시 Step B (reverse). 둘 다 실패 시 NO_VALID_MAGIC_SQUARE.
+  authoritative_docs:
+    - docs: Report/01_problem_definition.md  # v2.0 Solver 도메인
+    - docs: Report/02_branching_strategy.md  # 브랜치·PR 카덴스
+    - docs: Report/04_architecture_design.md  # ECB·계약·테스트 ID·Traceability
+  superseded_docs:
+    - Report/03_prd.md  # 학습 기록으로만 보존, 참조 금지
+
+# =============================================================================
+# code_style — 파이썬 코드 스타일 (PEP8 + 엄격)
+# =============================================================================
+code_style:
+  python_version: "3.10+"
+  style_guide: "PEP8 엄격 준수"
+  type_hints:
+    required_on: ["function_parameters", "function_returns", "method_parameters", "method_returns"]
+    forbidden: "Any 남용 — 의미가 있는 곳에는 Protocol·TypedDict·NewType 사용"
+  docstring:
+    style: "Google"
+    required_on: ["all_public_functions", "all_public_classes", "all_public_methods"]
+    required_sections: ["Args", "Returns", "Raises"]
+  max_line_length: 88  # Black 기준
+  imports:
+    order: ["stdlib", "third_party", "local"]
+    forbidden: ["from x import *"]
+  naming:
+    modules: snake_case
+    classes: PascalCase
+    functions_and_variables: snake_case
+    constants: UPPER_SNAKE_CASE
+  literal_constants:
+    forbidden_literals_in_src: [4, 34]  # 04 §1.2 I5 (Magic Constant) + §0 SSOT
+    rule: "정수 리터럴 4·34는 src/ 내 어디에도 직접 등장 금지. GRID_SIZE·MAGIC_CONSTANT 등 명명된 상수만 사용."
+
+# =============================================================================
+# architecture — ECB (Entity / Control / Boundary)
+# =============================================================================
+architecture:
+  pattern: "ECB (Entity-Control-Boundary)"
+  source_of_truth: "Report/04_architecture_design.md §1·§2·§5 (옵션 ii)"
+  layers:
+    boundary:
+      responsibility: "외부 입출력 담당 — CLI, API, 라이브러리 호출자 인터페이스, Repository 어댑터"
+      path: "src/boundary/"
+      contains:
+        - InputValidator  # I1~I4·I12 검증, 에러 코드 E001~E004
+        - SolveBoundary   # 외부 호출자에게 int[6] 또는 ErrorObject 반환
+        - repository/     # Data Layer 어댑터 (워크북 ECB는 Data를 Boundary로 흡수)
+      may_depend_on: ["control"]
+      may_not_depend_on: ["entity"]  # Domain Service 직접 호출 금지 — Control 경유
+    control:
+      responsibility: "Use Case 오케스트레이션 — Step A/B 시도 순서, Repository 호출 결정"
+      path: "src/control/"
+      contains:
+        - SolvePartialMagicSquare  # Boundary로부터 검증된 입력을 받아 Domain Service 호출
+      may_depend_on: ["entity"]
+      may_not_depend_on: ["boundary"]
+    entity:
+      responsibility: "도메인 데이터·규칙·순수 로직 — VO, Entity, Domain Service"
+      path: "src/entity/"
+      contains:
+        - constants       # GRID_SIZE, MAGIC_CONSTANT, BLANK_VALUE 등 SSOT
+        - MagicBoard
+        - BlankFinder
+        - MissingNumberFinder
+        - MagicSquareValidator
+        - SolutionAttempter
+        - StepABSolver
+      may_depend_on: []  # 표준 라이브러리 외 의존 금지
+      may_not_depend_on: ["boundary", "control"]
+  dependency_direction: "boundary → control → entity (안쪽 = 더 안정)"
+  cross_layer_test: "tests/integration/ 만 ECB 전부를 결합해 검증한다"
+
+# =============================================================================
+# tdd_rules — RED / GREEN / REFACTOR
+# =============================================================================
+tdd_rules:
+  source_of_truth: "Report/02_branching_strategy.md §3"
+  red_phase:
+    description: "실패하는 테스트만 먼저 작성한다."
+    rules:
+      - "테스트 함수의 이름은 test_<I or D or U or DAT or I-INT>_<id>_<behavior> 형식"
+      - "테스트는 의도된 한 가지 실패만 보여야 한다 (수집 에러·typo 금지)"
+      - "Arrange/Act/Assert(AAA) 세 단락이 시각적으로 구분되어야 한다"
+      - "Production 코드는 RED 커밋에 포함시키지 않는다"
+    must_not:
+      - "테스트 본문에 production 클래스를 신규 정의 (import만 허용)"
+      - "테스트가 우연히 통과하도록 weak assertion 작성 (예: assert True)"
+      - "RED 커밋과 GREEN 커밋을 한 commit으로 묶음 (M1 위반)"
+  green_phase:
+    description: "직전 RED 테스트만 통과시키는 최소 코드를 작성한다."
+    rules:
+      - "리팩토링 금지 — 구조 개선은 REFACTOR 단계에서만"
+      - "변경 범위는 직전 RED 테스트의 import 라인이 가리키는 모듈로 한정"
+      - "새로운 invariant·기능을 끼워넣지 않는다 (M2 위반)"
+    must_not:
+      - "직전 RED와 무관한 production 코드 수정"
+      - "기존 테스트 변경 (수정·삭제·약화)"
+      - "print/디버그 잔재 남김"
+  refactor_phase:
+    description: "동작 변경 없이 구조를 개선한다."
+    rules:
+      - "리팩토 전후 모든 테스트가 동일해야 한다 (추가·삭제·수정 금지)"
+      - "커버리지 임계(04 §4.4)는 유지하거나 향상되어야 한다"
+      - "Golden Master 테스트(존재 시)는 matched 상태를 유지"
+    must_not:
+      - "리팩토 커밋에 새 테스트 추가 (M2 위반)"
+      - "기능 추가 또는 동작 변경"
+
+# =============================================================================
+# testing — pytest 사용 규약
+# =============================================================================
+testing:
+  framework: pytest
+  pattern: "AAA (Arrange-Act-Assert)"
+  layout:
+    root: "tests/"
+    subdirs:
+      - "tests/entity/"       # D-* 테스트
+      - "tests/boundary/"     # U-* 테스트
+      - "tests/control/"      # 컨트롤 오케스트레이션 테스트
+      - "tests/data/"         # DAT-* 테스트 (Repository 구현)
+      - "tests/integration/"  # I-INT-* 통합 테스트
+  naming_convention:
+    file_prefix: "test_"
+    function_prefix: "test_"
+  fixture_scope:
+    default: "function"
+    rationale: "테스트 간 상태 누수 방지. session/module scope는 명시적 사유가 있을 때만 사용"
+  coverage:
+    targets:
+      domain: ">= 95%"      # 04 §4.4
+      boundary: ">= 85%"
+      data: ">= 80%"
+      control: ">= 90%"
+    enforcement: "CI에서 임계 미달 시 빌드 실패. PR 본문에서 명시적 동의 없이 임계 하향 금지."
+  test_id_namespaces:
+    D: "Domain (Logic Layer) — 04 §1.5"
+    U: "UI / Boundary — 04 §2.3"
+    DAT: "Data Layer — 04 §3.4"
+    I-INT: "Integration — 04 §4.2"
+  mocking_policy:
+    rule: "Mock은 외부 의존성·계층 경계 격리에만 사용. 같은 계층 내 mock 금지."
+    boundary_tests: "Domain은 mock으로 대체해 Boundary 단독 검증 (U-FLOW-02 call_count 검증 포함)"
+    domain_tests: "Mock 금지 — 순수 함수·VO만 다룬다"
+
+# =============================================================================
+# forbidden — 금지 패턴
+# =============================================================================
+forbidden:
+  - pattern: "print(...)"
+    reason: "디버그 잔재는 production 코드 품질을 떨어뜨리고 테스트 출력을 오염시킨다"
+    alternative: "logging 모듈 + pytest caplog"
+  - pattern: "magic number literal 4 or 34 in src/"
+    reason: "Magic Constant·GridSize는 SSOT. 04 §1.2 I5 위반"
+    alternative: "src/entity/constants.py 의 GRID_SIZE, MAGIC_CONSTANT 사용"
+  - pattern: "except Exception: pass  /  bare except:"
+    reason: "도메인 실패와 시스템 에러를 구분 못함. 02 §에러와 실패의 분리 위반"
+    alternative: "구체 예외 타입 명시 + 도메인 에러는 정의된 에러 코드(E001~E005)로 매핑"
+  - pattern: "from X import *"
+    reason: "네임스페이스 오염, 정적 분석·IDE 지원 약화"
+    alternative: "필요한 심볼만 명시 import"
+  - pattern: "TODO/FIXME without issue link"
+    reason: "추적 불가능한 부채는 영구 부채가 된다"
+    alternative: "TODO(#<issue번호>): <설명> 형식"
+  - pattern: "Domain Service에서 Boundary 또는 Control import"
+    reason: "Clean Architecture 의존 방향 역전. architecture 섹션 위반"
+    alternative: "Domain은 외부 의존성 0개. 인터페이스는 Control에 둔다"
+  - pattern: "RED 없이 신규 production 코드 추가"
+    reason: "메타 invariant M1 위반 — 검증되지 않은 코드"
+    alternative: "RED 테스트 작성 → 실행해서 실패 확인 → GREEN으로 최소 구현"
+  - pattern: "테스트의 assert 약화 (assert True, pytest.skip, xfail 등)"
+    reason: "검증을 우회하는 것은 회귀를 숨기는 행위"
+    alternative: "원인 분석 → 도메인 수정 또는 PR 본문에서 명시적 사유와 함께 별도 리뷰"
+  - pattern: "한 PR에서 여러 invariant·여러 RGR 단계 혼합"
+    reason: "02 §2.3 안티패턴 — 리뷰 단위 비대화로 추적성 손실"
+    alternative: "invariant·단계 단위로 PR 분할"
+
+# =============================================================================
+# file_structure — ECB 폴더 구조
+# =============================================================================
+file_structure:
+  root:
+    - .cursorrules
+    - .gitignore
+    - pyproject.toml
+    - README.md
+    - Report/                # 정제된 보고서
+    - Prompt/                # 프롬프트 전사본
+    - docs/                  # PRD·기타 문서 (P-02부터 사용)
+    - src/
+    - tests/
+  src_tree: |
+    src/
+    ├── entity/                          # Domain Layer (Logic)
+    │   ├── __init__.py
+    │   ├── constants.py                 # GRID_SIZE, MAGIC_CONSTANT, BLANK_VALUE, MIN_VALUE, MAX_VALUE, BLANK_COUNT, OUTPUT_LENGTH
+    │   ├── value_objects.py             # Coordinate, BlankCoordinates, MissingPair, SolutionResult
+    │   ├── magic_board.py
+    │   ├── blank_finder.py              # D-LOC-*
+    │   ├── missing_number_finder.py     # D-MISS-*
+    │   ├── magic_square_validator.py    # D-VAL-*
+    │   ├── solution_attempter.py        # D-ATT-*
+    │   ├── step_ab_solver.py            # D-SOL-*
+    │   └── errors.py                    # NoValidMagicSquareError
+    ├── control/                         # Use Case Orchestration
+    │   ├── __init__.py
+    │   └── solve_partial_magic_square.py
+    └── boundary/                        # 외부 경계 + Data Adapter
+        ├── __init__.py
+        ├── error_codes.py               # E001~E005
+        ├── input_validator.py           # U-VAL-*·U-FLOW-*
+        ├── solve_boundary.py            # U-OUT-*
+        └── repository/
+            ├── __init__.py
+            ├── matrix_repository.py     # Protocol/ABC
+            └── in_memory_repository.py  # DAT-MEM-*  (File 구현은 Golden Master 단계에서)
+  tests_tree: |
+    tests/
+    ├── entity/        # D-* (D-LOC, D-MISS, D-VAL, D-ATT, D-SOL)
+    ├── boundary/      # U-* (U-VAL, U-FLOW, U-OUT)
+    ├── control/       # 컨트롤 단위 테스트
+    ├── data/          # DAT-* (DAT-MEM, DAT-FILE, DAT-CONTRACT)
+    └── integration/   # I-INT-* (I-INT-01~07, I-GM-*)
+
+# =============================================================================
+# ai_behavior — Cursor AI의 코드 생성 전·중·후 행동 규약
+# =============================================================================
+ai_behavior:
+  before_writing_code:
+    - "관련 테스트 파일(tests/...)이 존재하는지 먼저 확인한다"
+    - "테스트가 없다면 production 코드 작성을 중단하고 RED 테스트부터 작성 요청"
+    - "변경 대상이 어느 ECB 레이어인지 명시한다"
+    - "변경이 04 §4.5 Traceability Matrix의 어느 invariant·테스트 ID에 매핑되는지 확인"
+  while_writing_code:
+    - "type hints 없는 함수·메서드 생성 금지"
+    - "ECB 레이어 경계 위반(예: entity에서 boundary import) 시 즉시 중단"
+    - "literal 4·34 src/ 내 직접 사용 시 즉시 중단하고 GRID_SIZE·MAGIC_CONSTANT 제안"
+    - "Google docstring을 모든 public 함수·클래스에 작성"
+  after_writing_code:
+    - "변경된 production 코드에 대응하는 RED 테스트의 GREEN 전환 확인 (pytest 실행)"
+    - "기존 테스트가 깨지지 않았는지 전체 pytest 실행"
+    - "커버리지 임계(04 §4.4) 충족 확인"
+    - "변경 사항을 02 §5 PR 템플릿 형식으로 요약 (PR 카덴스 단계 명시)"
+  on_tdd_violation:
+    detection_signals:
+      - "RED 없이 src/ 신규 파일 생성 시도"
+      - "한 commit에 RED+GREEN 혼합"
+      - "REFACTOR 단계에서 테스트 변경"
+    action: "경고 출력 + 변경 중단 + 사용자에게 단계 확정 요청"
+  on_workbook_step_completion:
+    - "Report/<NN>_<topic>.md 와 Prompt/<MM>_<topic>_transcript.md 페어 산출"
+    - "README.md 문서 인덱스에 새 산출물 링크 추가"
+    - "develop 브랜치에 커밋 + push (main으로의 PR은 §2.3 카덴스가 허용할 때만)"

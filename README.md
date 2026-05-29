@@ -8,8 +8,11 @@
 - [`Report/02_branching_strategy.md`](./Report/02_branching_strategy.md) — RGR 정합 브랜치·커밋 전략 (도메인 중립, 유효)
 - [`Report/03_prd.md`](./Report/03_prd.md) — ⚠️ **SUPERSEDED** — 초기 Judge 도메인 기준 PRD. 워크북 §P-02에서 Solver 기준 새 PRD가 작성될 예정
 - [`Report/04_architecture_design.md`](./Report/04_architecture_design.md) — Logic/Screen/Data/Integration 4계층 설계 + Traceability Matrix (워크북 §과제 1 산출)
+- [`Report/05_cursor_rules_design.md`](./Report/05_cursor_rules_design.md) — Cursor Rules 설계 의도·자기 검증·한계 (워크북 §Cursor Rule 산출)
+- [`.cursorrules`](./.cursorrules) — Cursor AI 규약 (YAML 8섹션: project / code_style / architecture / tdd_rules / testing / forbidden / file_structure / ai_behavior)
 - [`Prompt/01_problem_definition_transcript.md`](./Prompt/01_problem_definition_transcript.md) — 문제 정의 과정의 원본 대화 기록
 - [`Prompt/02_architecture_design_transcript.md`](./Prompt/02_architecture_design_transcript.md) — 아키텍처 설계 과정의 원본 대화 기록
+- [`Prompt/03_cursor_rules_transcript.md`](./Prompt/03_cursor_rules_transcript.md) — Cursor Rules 설계 과정의 원본 대화 기록
 
 ---
 
